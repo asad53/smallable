@@ -78,20 +78,29 @@ def RunScrapper(driver):
     # setting row number to 2
     mi = 2
 
-    mainlink = "https://www.smallable.com/fr/"
-    # driver.get(mainlink)
-    # WebDriverWait(driver, 40).until(expected_conditions.visibility_of_element_located((By.XPATH, "//ul[@class='main-nav-ul']")))
+    #mainlink = "https://www.smallable.com/fr/"
 
-    # try:
-    #    driver.find_element_by_id('didomi-notice-agree-button').click()
-    # except Exception:
-    #    pass
-    allprods = ['https://www.smallable.com/fr/page/nouveautes', 'https://www.smallable.com/fr/mode/bebe',
-                'https://www.smallable.com/fr/mode/enfant', 'https://www.smallable.com/fr/mode/adolescent',
-                'https://www.smallable.com/fr/page/streetwear', 'https://www.smallable.com/fr/mode/adulte/femme',
-                'https://www.smallable.com/fr/page/beauty',
-                'https://www.smallable.com/fr/page/decoration-mobilier-design-enfant',
-                'https://www.smallable.com/fr/page/greenable', 'https://www.smallable.com/fr/page/outlet']
+    driver.get("https://www.smallable.com/en/")
+
+    WebDriverWait(driver, 40).until(
+        expected_conditions.visibility_of_element_located((By.XPATH, '/html/body/div[2]/div[1]/header/div[2]/div/div[2]/div[1]/div[1]/span[4]/div')))
+
+    try:
+        driver.find_element_by_id('didomi-notice-agree-button').click()
+    except Exception:
+        pass
+
+    driver.find_element_by_xpath('/html/body/div[2]/div[1]/header/div[2]/div/div[2]/div[1]/div[1]/span[4]/div').click()
+
+    driver.find_element_by_xpath('/html/body/div[2]/div[1]/header/div[2]/div/div[2]/div[1]/div[1]/span[4]/div/div[3]/ul/li[6]/a').click()
+
+
+    allprods = ['https://www.smallable.com/en/page/new', 'https://www.smallable.com/en/fashion/baby',
+                'https://www.smallable.com/en/fashion/children', 'https://www.smallable.com/en/teen/women/fashion',
+                'https://www.smallable.com/en/page/streetwear', 'https://www.smallable.com/en/fashion/adult/women',
+                'https://www.smallable.com/en/page/beauty',
+                'https://www.smallable.com/en/page/kids-room-furniture-design',
+                'https://www.smallable.com/en/page/greenable', 'https://www.smallable.com/en/page/kids-outlet']
     entno = 1
     catno = 1
     for allprod in allprods:
@@ -100,7 +109,7 @@ def RunScrapper(driver):
         prodlist = []
         try:
             pgno=1
-            for j in range(10000000000000000000):
+            for j in range(100000000000000):
                 allprod1 = allprod + "?_page=" + str(pgno)
                 driver.get(allprod1)
                 print("Page No: ",pgno)
@@ -119,13 +128,7 @@ def RunScrapper(driver):
                 except Exception:
                     print("No More Pages")
                     break
-                if (catno-1) == 1:
-                    try:
-                        driver.find_element_by_id('didomi-notice-agree-button').click()
-                    except Exception:
-                        pass
-                else:
-                    pass
+
                 maincontainer = driver.find_element_by_xpath("//section[@class='product-list']")
                 maincontainer = maincontainer.find_elements_by_xpath('.//div[@class="product-item has-ratio"]')
                 for maincontain in maincontainer:
@@ -193,11 +196,16 @@ def RunScrapper(driver):
 
                             try:
                                 pricep = driver.find_element_by_xpath('//div[@class="p-price"]')
-                                price = pricep.text
-                                regularprice = price
-                                saleprice = price
+                                try:
+                                    saleprice =driver.find_element_by_xpath('//strong[@class="sale-price"]').get_attribute('data-discount-price')
+                                    regularprice = pricep.find_element_by_xpath(
+                                        './/meta[@itemprop="price"]').get_attribute('content')
+                                except Exception:
+                                    regularprice = pricep.find_element_by_xpath(
+                                        './/meta[@itemprop="price"]').get_attribute('content')
+                                    saleprice = regularprice
+                                    pass
                             except Exception:
-                                price = ''
                                 regularprice = ''
                                 saleprice = ''
                                 pass
@@ -226,7 +234,8 @@ def RunScrapper(driver):
 
                             print("Brand: ", brand)
                             print("Product: ", product)
-                            print("Price: ", price)
+                            print("Regular Price: ", regularprice)
+                            print("Sale Price: ", saleprice)
                             print("SKU: ", sku)
                             print("Description: ", description)
                             print("Images: ", images)
